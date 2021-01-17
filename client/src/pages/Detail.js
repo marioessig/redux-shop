@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@apollo/react-hooks";
-import { useStoreContext } from "../utils/GlobalState";
 import { idbPromise } from "../utils/helpers";
+
 import {
   REMOVE_FROM_CART,
   UPDATE_CART_QUANTITY,
   ADD_TO_CART,
   UPDATE_PRODUCTS,
 } from "../utils/actions";
+
 import { QUERY_PRODUCTS } from "../utils/queries";
 import spinner from "../assets/spinner.gif";
 import Cart from "../components/Cart";
+import { useDispatch, useSelector } from "react-redux";
 
 function Detail() {
-  const [state, dispatch] = useStoreContext();
+  const state = useSelector((state) => state);
+  const dispatch = useDispatch();
   const { id } = useParams();
-  const { products, cart } = state;
+  const { products, cart } = state; 
   const [currentProduct, setCurrentProduct] = useState({});
   const { loading, data } = useQuery(QUERY_PRODUCTS);
 
@@ -30,6 +33,7 @@ function Detail() {
         type: UPDATE_PRODUCTS,
         products: data.products,
       });
+
       data.products.forEach((product) => {
         idbPromise("products", "put", product);
       });
@@ -46,6 +50,7 @@ function Detail() {
   }, [products, data, loading, dispatch, id]);
 
   const addToCart = () => {
+
     const itemInCart = cart.find((cartItem) => cartItem._id === id);
 
     if (itemInCart) {
@@ -54,6 +59,7 @@ function Detail() {
         _id: id,
         purchaseQuantity: parseInt(itemInCart.purchaseQuantity) + 1,
       });
+
       idbPromise("cart", "put", {
         ...itemInCart,
         purchaseQuantity: parseInt(itemInCart.purchaseQuantity) + 1,
